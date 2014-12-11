@@ -68,6 +68,15 @@ class ReflexAgent(Agent):
     newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
     "*** YOUR CODE HERE ***"
+    #escape ghosts
+    alertDist = 3
+    minDist = float('inf')
+    for ghost in newGhostStates:
+      ghostDist = manhattanDistance(newPos,ghost.getPosition())
+      minDist = min(minDist,ghostDist)
+    if minDist < alertDist:
+      return float('-inf')
+
     return successorGameState.getScore()
 
 def scoreEvaluationFunction(currentGameState):
