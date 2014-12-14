@@ -12,6 +12,8 @@ import random, util
 
 from game import Agent
 
+import pdb
+
 class ReflexAgent(Agent):
   """
     A reflex agent chooses an action at each choice point by examining
@@ -68,16 +70,19 @@ class ReflexAgent(Agent):
     newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
     "*** YOUR CODE HERE ***"
-    #escape ghosts
+    #keep away from ghosts
     alertDist = 3
-    minDist = float('inf')
-    for ghost in newGhostStates:
-      ghostDist = manhattanDistance(newPos,ghost.getPosition())
-      minDist = min(minDist,ghostDist)
-    if minDist < alertDist:
+    ghostDists = [manhattanDistance(newPos,ghost.getPosition()) for ghost in newGhostStates]
+    minGhostDist = min(ghostDists)
+    if minGhostDist < alertDist:
       return float('-inf')
 
-    return successorGameState.getScore()
+    foodPos = oldFood.asList()
+    foodNum = successorGameState.getNumFood()
+    foodDists = [manhattanDistance(newPos,coord) for coord in foodPos]
+    minFoodDist = min(foodDists)
+        
+    return successorGameState.getScore() + 10/(minFoodDist+1) - 10*foodNum
 
 def scoreEvaluationFunction(currentGameState):
   """
@@ -135,7 +140,54 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns the total number of agents in the game
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    self.agentNum = gameState.getNumAgents()
+    if self.depth==0:
+      return float('inf')
+
+    actions = gameState.getLegalActions(0)
+    if actions==[]:
+      return self.evaluationFunction(gameState)
+
+    vals = [self.minValue(gameState.generateSuccessor(0,move),1,self.depth) for move in actions]
+    bestVal = max(vals)
+    bestIndices = [index for index in range(len(vals)) if bestVal==vals[index]]
+    chosenMove = random.choice(bestIndices)
+
+    return actions[chosenMove]
+
+  def maxValue(self,gameState,depth):
+    if depth==0:
+      return self.evaluationFunction(gameState)
+
+    actions = gameState.getLegalActions(0)
+    if actions==[]:
+      return self.evaluationFunction(gameState)
+
+    results = [self.minValue(gameState.generateSuccessor(0,move),1,depth) for move in actions]
+    maxVal = max(results)
+
+    return maxVal
+
+  def minValue(self,gameState,agentIndex,depth):
+    if depth==0:
+      return self.evaluationFunction(gameState)
+
+    actions = gameState.getLegalActions(agentIndex)
+    if actions==[]:
+      return self.evaluationFunction(gameState)
+
+    results = []
+    for move in actions:
+      successor = gameState.generateSuccessor(agentIndex,move)
+      if agentIndex == self.agentNum-1:
+        results += [self.maxValue(successor,depth-1)]
+      else:
+        results += [self.minValue(successor,agentIndex+1,depth)]
+    minVal = min(results)
+
+    #pdb.set_trace()
+
+    return minVal
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
   """
