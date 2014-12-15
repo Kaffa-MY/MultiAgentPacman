@@ -270,9 +270,47 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
       legal moves.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    if self.depth==0:
+      return float('inf')
 
-  
+    actions = gameState.getLegalActions(0)
+    if actions==[]:
+      return self.evaluationFunction(gameState)
+
+    results = [self.minValue(gameState.generateSuccessor(0,move),1,self.depth) for move in actions]
+    optRes = max(results)
+    optIndice = [index for index in range(len(results)) if results[index]==optRes]
+    chosenIndex = random.choice(optIndice)
+    #pdb.set_trace()
+    return actions[chosenIndex]
+
+  def maxValue(self,gameState,depth):
+    actions = gameState.getLegalActions(0)
+    if actions==[] or depth==0:
+      return self.evaluationFunction(gameState)
+
+    results = [self.minValue(gameState.generateSuccessor(0,move),1,depth) for move in actions]
+    #pdb.set_trace()
+    return max(results)
+
+  def minValue(self,gameState,agentIndex,depth):
+    actions = gameState.getLegalActions(agentIndex)
+    if actions==[] or depth==0:
+      return self.evaluationFunction(gameState)
+
+    results = []
+    if agentIndex == gameState.getNumAgents()-1:
+      results = [self.maxValue(gameState.generateSuccessor(agentIndex,move),depth-1) for move in actions]
+    else:
+      results = [self.minValue(gameState.generateSuccessor(agentIndex,move),agentIndex+1,depth) for move in actions]
+
+    resSum = 0
+    for i in results:
+      resSum += i
+    expRes = resSum/len(results)
+    #pdb.set_trace()
+    return expRes
+    
 
 def betterEvaluationFunction(currentGameState):
   """
