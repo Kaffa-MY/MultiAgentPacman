@@ -199,7 +199,63 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
       Returns the minimax action using self.depth and self.evaluationFunction
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    """
+      start action, in fact, it's an initial process of maxValue, 
+      but it includes the firt move of pacman
+    """
+    alpha = float('-inf')
+    beta = float('inf')
+
+    if self.depth==0:
+      return float('inf')
+
+    actions = gameState.getLegalActions(0)
+    if actions==[]:
+      return self.evaluationFunction(gameState)
+
+    bestMove = Directions.STOP
+    v = float('-inf')
+    for move in actions:
+      curRes = self.minValue(gameState.generateSuccessor(0,move),1,self.depth,alpha,beta)
+      if curRes>=v:
+        v = curRes
+        bestMove = move
+      if v>=alpha:
+        alpha = v
+    return bestMove
+
+  def maxValue(self,gameState,depth,alpha,beta):
+    actions = gameState.getLegalActions(0)
+    if actions==[] or depth==0:
+      return self.evaluationFunction(gameState)
+
+    maxRes = float('-inf')
+    for move in actions:
+      curRes = self.minValue(gameState.generateSuccessor(0,move),1,depth,alpha,beta)
+      maxRes = max(curRes,maxRes)
+      if maxRes>=beta:
+        return maxRes
+      alpha = max(alpha,maxRes)
+    return maxRes
+
+
+  def minValue(self,gameState,agentIndex,depth,alpha,beta):
+    actions = gameState.getLegalActions(agentIndex)
+    if actions==[] or depth==0:
+      return self.evaluationFunction(gameState)
+
+    minRes = float('inf')
+    for move in actions:
+      successor = gameState.generateSuccessor(agentIndex,move)
+      if agentIndex==gameState.getNumAgents()-1: #last ghost agent
+        curRes = self.maxValue(successor,depth-1,alpha,beta)
+      else:
+        curRes = self.minValue(successor,agentIndex+1,depth,alpha,beta)
+      minRes = min(curRes,minRes)
+      if alpha>=minRes:
+        return minRes
+      beta = min(beta,minRes)
+    return minRes
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
   """
@@ -215,6 +271,8 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     """
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
+
+  
 
 def betterEvaluationFunction(currentGameState):
   """
