@@ -320,7 +320,44 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: <write something here so we know what you did>
   """
   "*** YOUR CODE HERE ***"
-  util.raiseNotDefined()
+  pacmanPos = currentGameState.getPacmanPosition()
+  foods = currentGameState.getFood()
+  ghostStates = currentGameState.getGhostStates()
+  #scaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+
+  #scaredTimerAndPositions = [(ghostState.scaredTimer, ghostState.getPosition()) for ghostState in ghostStates]
+  scaredTimers = [ghostState.scaredTimer for ghostState in ghostStates]
+  ghostDists = [manhattanDistance(ghostState.getPosition(),pacmanPos) for ghostState in ghostStates]
+
+  #pdb.set_trace()
+
+  minGhostDist = min(ghostDists)
+  optIndice = [ind for ind in range(len(ghostDists)) if ghostDists[ind]==minGhostDist]
+  chosenIndex = random.choice(optIndice)
+  isScared = scaredTimers[chosenIndex]
+
+  if isScared>2 and minGhostDist<10:
+    scareGhost = 200+minGhostDist
+  elif minGhostDist ==2:
+    scareGhost = -20
+  elif minGhostDist <=1:
+    scareGhost = -1000
+    #return float('-inf')
+  else:
+    scareGhost = minGhostDist
+
+
+  foodPos = foods.asList()
+  foodCount = currentGameState.getNumFood()
+  foodDists = [manhattanDistance(curFood,pacmanPos) for curFood in foodPos]
+  #pdb.set_trace()
+  if foodDists != []:
+    minFoodDist = min(foodDists)
+  else:
+    minFoodDist = float('inf')  #when there is no food any more
+
+  val = currentGameState.getScore()+10/(minGhostDist+1)-100*foodCount+scareGhost/10
+  return val
 
 # Abbreviation
 better = betterEvaluationFunction
